@@ -32,11 +32,11 @@ SAPSO <- function(
   # )
 
 
-  # length of dimension
   d <- length(pos)
   if(length(lower) == 1){lower <- rep(lower, d)}
   if(length(upper) == 1){upper <- rep(upper, d)}
 
+  # init
   X <- mrunif(nr = d, nc = control$s, lower = lower, upper = upper)
   if(is.numeric(pos)){X[,1] <- pos}
   V <- mrunif(nr = d, nc = control$s, lower = lower, upper = upper) # has to be fixed
@@ -53,19 +53,29 @@ SAPSO <- function(
   }else{
     which(Pc <= control$delta)[which.min(Po[,Pc <= control$delta])]
   }
-  Ppg <- Pp[,g_pos]
-  Pog <- Po[g_pos]
-  Pcg <- Pc[g_pos]
+  Gp <- Pp[,g_pos]
+  Go <- Po[g_pos]
+  Gc <- Pc[g_pos]
 
 
   i <- 1
   while(i <= control$iter){
 
+    # update velocitys and positions
+    V <- control$w * V + control$cp * t(runif(ncol(X)) * t(Pp-X)) + control$cg * t(runif(ncol(X)) * t(Gp-X))
+    X <- X + V
+
+    # repair positions
+    Pp_mean <- apply(Pp, 1, mean)
+    sel_lower <- which(X < lower, arr.ind = T)
+    X[X<lower] <- runif(length(sel_lower[,1])) * (Pp_mean[sel_lower[,1]] - lower[sel_lower[,1]])
+    sel_upper <- which(X > upper, arr.ind = T)
+    X[X>upper] <- runif(length(sel_upper[,1])) * (upper[sel_upper[,1]] - Pp_mean[sel_upper[,1]])
 
   }
 
 
-
+  library(packagefinder)
 }
 
 
